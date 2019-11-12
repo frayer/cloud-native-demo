@@ -11,3 +11,10 @@
 * Try to hit an endpoint which interacts with Redis (should error since redis isn't running)
 * Deploy a single node Redis and expose it at a service with `kubectl`
 * Configure liveness and readiness probes
+
+## Deploy Ingress
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud-generic.yaml
+```
