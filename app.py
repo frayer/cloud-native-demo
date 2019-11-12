@@ -1,7 +1,9 @@
-from flask import Flask, Response, json
+from arguments import args
+from flask import Flask, Response, request, json
 import logging
 import os
-from arguments import args
+import redis
+import time
 
 app = Flask(__name__)
 
@@ -10,8 +12,8 @@ LISTEN_PORT = args.port
 REDIS_HOST = args.redis_host
 REDIS_PORT = args.redis_port
 
-import redis
 redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
+livenessDelay = 0
 
 @app.route('/')
 def root():
@@ -29,8 +31,15 @@ def root():
     return Response(data, mimetype="application/json")
 
 @app.route('/live')
-def live():
-    return Response(json.dumps({}), status=200, mimetype="application/json")
+def live_get():
+    time.sleep(livenessDelay)
+    return Response(json.dumps({"delay": livenessDelay}), status=200, mimetype="application/json")
+
+@app.route('/live', methods=['POST'])
+def live_post():
+    global livenessDelay
+    livenessDelay = request.get_json()['delay']
+    return Response(json.dumps({"delay": livenessDelay}), status=200, mimetype="application/json")
 
 @app.route('/ready')
 def ready():
