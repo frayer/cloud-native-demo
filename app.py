@@ -12,7 +12,7 @@ LISTEN_PORT = args.port
 REDIS_HOST = args.redis_host
 REDIS_PORT = args.redis_port
 
-redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
+redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=True)
 livenessDelay = 0
 
 @app.route('/')
@@ -30,15 +30,36 @@ def root():
     })
     return Response(data, mimetype="application/json")
 
+@app.route('/counter')
+def counter():
+    hostname = os.getenv("HOSTNAME")
+
+    try:
+        if redis_client.hexists("hosts", hostname):
+            redis_client.hincrby("hosts", hostname, amount=1)
+        else:
+            redis_client.hset("hosts", hostname, 1)
+
+        return Response(json.dumps(redis_client.hgetall("hosts")), status=200, mimetype="application/json")
+    except:
+        return Response(json.dumps({"error": "service unavailable"}), status=503, mimetype="application/json")
+
+
+@app.route('/counter/clear')
+def clear_counter():
+    hosts = redis_client.hgetall("hosts")
+    [redis_client.hdel("hosts", key) for key in hosts.keys()]
+    return Response(json.dumps(redis_client.hgetall("hosts")), status=200, mimetype="application/json")
+
 @app.route('/live')
 def live_get():
     time.sleep(livenessDelay)
     return Response(json.dumps({"delay": livenessDelay}), status=200, mimetype="application/json")
 
-@app.route('/live', methods=['POST'])
-def live_post():
+@app.route('/live/<int:delay>')
+def live_post(delay):
     global livenessDelay
-    livenessDelay = request.get_json()['delay']
+    livenessDelay = delay
     return Response(json.dumps({"delay": livenessDelay}), status=200, mimetype="application/json")
 
 @app.route('/ready')
