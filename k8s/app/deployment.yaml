@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -20,54 +20,54 @@ spec:
         run: cloud-native-demo
     spec:
       containers:
-      - image: cloud-native-demo:0f8466a-dirty
-        imagePullPolicy: IfNotPresent
-        name: cloud-native-demo
-        env:
-          - name: REDIS_HOST
-            value: redis-test
-          - name: REDIS_PORT
-            value: "6379"
-          - name: USER_DEFINED_1
-            valueFrom:
+        - image: cloud-native-demo:0f8466a-dirty
+          imagePullPolicy: IfNotPresent
+          name: cloud-native-demo
+          env:
+            - name: REDIS_HOST
+              value: redis-test
+            - name: REDIS_PORT
+              value: "6379"
+            - name: USER_DEFINED_1
+              valueFrom:
                 configMapKeyRef:
                   name: cloud-native-demo
                   key: user-defined-1
-          - name: USER_DEFINED_2
-            valueFrom:
+            - name: USER_DEFINED_2
+              valueFrom:
                 configMapKeyRef:
                   name: cloud-native-demo
                   key: user-defined-2
-          - name: USER_DEFINED_3
-            valueFrom:
+            - name: USER_DEFINED_3
+              valueFrom:
                 configMapKeyRef:
                   name: cloud-native-demo
                   key: user-defined-3
-        command:
-          - sh
-          - -c
-          - |
-            python app.py --redis-host $(REDIS_HOST)
-        resources:
-          limits:
-            cpu: 1
-            memory: 128Mi
-          requests:
-            cpu: 100m
-            memory: 128Mi
-        livenessProbe:
-          timeoutSeconds: 1
-          periodSeconds: 1
-          initialDelaySeconds: 1
-          httpGet:
-            path: /live
-            port: 5000
-        readinessProbe:
-          timeoutSeconds: 1
-          periodSeconds: 1
-          initialDelaySeconds: 1
-          httpGet:
-            path: /ready
-            port: 5000
+          command:
+            - sh
+            - -c
+            - |
+              python -m app.main --redis-host $(REDIS_HOST)
+          resources:
+            limits:
+              cpu: 1
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          livenessProbe:
+            timeoutSeconds: 1
+            periodSeconds: 1
+            initialDelaySeconds: 1
+            httpGet:
+              path: /live
+              port: 5000
+          readinessProbe:
+            timeoutSeconds: 1
+            periodSeconds: 1
+            initialDelaySeconds: 1
+            httpGet:
+              path: /ready
+              port: 5000
       restartPolicy: Always
       terminationGracePeriodSeconds: 2

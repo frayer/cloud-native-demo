@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -15,16 +15,16 @@ spec:
         run: redis-test
     spec:
       containers:
-      - image: redis
-        imagePullPolicy: Always
-        name: redis-test
-        resources:
-          limits:
-            cpu: 1
-            memory: 32Mi
-          requests:
-            cpu: 100m
-            memory: 32Mi
+        - image: redis
+          imagePullPolicy: Always
+          name: redis-test
+          resources:
+            limits:
+              cpu: 1
+              memory: 32Mi
+            requests:
+              cpu: 100m
+              memory: 32Mi
 ---
 apiVersion: v1
 kind: Service
@@ -37,6 +37,6 @@ spec:
   selector:
     run: redis-test
   ports:
-  - port: 6379
-    targetPort: 6379
-    protocol: TCP
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP

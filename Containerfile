@@ -1,4 +1,5 @@
-FROM python:3
+FROM docker.io/library/python:3.12.6
+# FROM docker.io/library/python:3.12.7
 
 WORKDIR /usr/src/app
 
@@ -7,6 +8,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 LABEL org.opencontainers.image.title="cloud-native-demo"
 
-COPY . .
+COPY ./app ./app
 
-CMD [ "python", "./app.py" ]
+RUN rm requirements.txt
+
+CMD [ "python", "-m", "app.main" ]
