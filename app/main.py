@@ -90,24 +90,20 @@ def live_post(delay: int):
 
 @app.route("/ready")
 def ready():
-    redis_ready = True
-
     try:
         redis_client.ping()  # pyright: ignore[reportUnknownMemberType]
+        return Response(
+            json.dumps({"redis_connection": "up"}),
+            status=200,
+            mimetype="application/json",
+        )
     except Exception:
-        redis_ready = False
         logging.warning("python connection down")
-
-    response = Response(mimetype="application/json")
-
-    if redis_ready:
-        response.status = "200"
-        response.response = json.dumps({"redis_connection": "up"})
-    else:
-        response.status = "503"
-        response.response = json.dumps({"redis_connection": "down"})
-
-    return response
+        return Response(
+            json.dumps({"redis_connection": "down"}),
+            status=503,
+            mimetype="application/json",
+        )
 
 
 if __name__ == "__main__":
